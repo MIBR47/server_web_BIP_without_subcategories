@@ -1,0 +1,268 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Billboard {
+  id            Int                    @id(map: "pk_Billboard") @default(autoincrement()) @db.SmallInt
+  title         String?                @db.VarChar(50)
+  description   String?                @db.VarChar(250)
+  isShowBtn     Boolean?
+  btnText       String?                @db.VarChar(50)
+  isImage       Boolean?
+  iStatus       MasterRecordStatusEnum @default(ACTIVE)
+  iShowedStatus WebsiteDisplayStatus   @default(SHOW)
+  remarks       String?                @db.VarChar(250)
+  createdBy     String?                @db.Char(50)
+  createdAt     DateTime?              @default(now()) @db.Timestamptz(3)
+  updatedBy     String?                @db.Char(50)
+  updatedAt     DateTime?              @db.Timestamptz(3)
+  contentURL    String?                @db.VarChar(250)
+  content_id    String?                @db.Char(30)
+
+  @@map("Billboards")
+}
+
+model news {
+  id            Int                  @id(map: "pk_news") @default(autoincrement()) @db.SmallInt
+  title         String
+  article       String?
+  // iStatus       MasterRecordStatusEnum @default(ACTIVE)
+  imageURL      String?              @db.VarChar(250)
+  iShowedStatus WebsiteDisplayStatus @default(SHOW)
+  remarks       String?              @db.VarChar(250)
+  newsTime      DateTime?            @default(now()) @db.Timestamptz(3)
+  createdBy     String?              @db.Char(50)
+  createdAt     DateTime?            @default(now()) @db.Timestamptz(3)
+  updatedBy     String?              @db.Char(50)
+  updatedAt     DateTime?
+  contentURL    String?              @db.VarChar(250)
+
+  @@map("News")
+}
+
+model Category {
+  id            Int                    @id(map: "pk_Category") @default(autoincrement()) @db.Integer
+  name          String                 @db.VarChar(80)
+  slug          String?                @unique @db.VarChar(50)
+  remarks       String?                @db.VarChar(250)
+  iStatus       MasterRecordStatusEnum @default(ACTIVE)
+  iShowedStatus WebsiteDisplayStatus   @default(SHOW)
+  imageURL      String?                @db.VarChar(250)
+  createdBy     String                 @db.Char(50)
+  createdAt     DateTime               @default(now()) @db.Timestamptz(3)
+  updatedBy     String?                @db.Char(50)
+  updatedAt     DateTime?              @db.Timestamptz(3)
+  // href          String?                @db.VarChar(150)
+  // icon          String?                @db.VarChar(50)
+  SubCategory   SubCategory[]
+
+  @@map("Categories")
+}
+
+model SubCategory {
+  id            Int                    @id(map: "pk_subCategory") @default(autoincrement()) @db.Integer
+  name          String                 @db.VarChar(80)
+  slug          String?                @unique @db.VarChar(50)
+  remarks       String?                @db.VarChar(250)
+  category_id    Int                    @db.Integer
+  iStatus       MasterRecordStatusEnum @default(ACTIVE)
+  iShowedStatus WebsiteDisplayStatus   @default(SHOW)
+  imageURL      String?                @db.VarChar(250)
+  createdBy     String                 @db.Char(50)
+  createdAt     DateTime               @default(now()) @db.Timestamptz(3)
+  updatedBy     String?                @db.Char(50)
+  updatedAt     DateTime?              @db.Timestamptz(3)
+
+  // href          String?                @db.VarChar(150)
+  // icon          String?                @db.VarChar(50)
+  Product  Product[]
+  Category Category  @relation(fields: [category_id], references: [id])
+
+  @@map("SubCategories")
+}
+
+model Product {
+  id             Int                    @id(map: "pk_Product") @default(autoincrement()) @db.Integer
+  // register_id   String?                @db.Char(20)
+  catalog_id     String?                @db.Char(20)
+  name           String                 @db.VarChar(250)
+  slug           String?                @db.VarChar(250)
+  subCategory_id Int                    @db.Integer
+  eCatalogURL    String?                @db.VarChar(250)
+  remarks        String?                @db.VarChar(250)
+  iStatus        MasterRecordStatusEnum @default(ACTIVE)
+  iShowedStatus  WebsiteDisplayStatus   @default(SHOW)
+  // isMaterial    Boolean                @default(false)
+  // isService     Boolean                @default(false)
+  // isFinishing   Boolean                @default(false)
+  // isAccessories Boolean                @default(false)
+  createdBy      String                 @db.Char(50)
+  createdAt      DateTime               @default(now()) @db.Timestamptz(3)
+  updatedBy      String?                @db.Char(50)
+  updatedAt      DateTime?              @db.Timestamptz(3)
+  subCategory    SubCategory            @relation(fields: [subCategory_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Product_id_subCategory_fkey")
+  ProductDesc    ProductDesc[]
+  ProductImage   ProductImage[]
+  // ProductSpec    ProductSpec[]
+
+  @@index([subCategory_id], map: "fki_Product_id_subCategory_fkey")
+  @@map("Products")
+}
+
+model ProductDesc {
+  id           Int       @id(map: "pk_ProductDesc") @default(autoincrement()) @db.Integer
+  descriptions String?
+  productSpec  String?
+  benefits     String?
+  createdBy    String    @db.Char(50)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedBy    String?   @db.Char(50)
+  updatedAt    DateTime? @db.Timestamptz(3)
+  product_id   Int       @db.Integer
+  Product      Product   @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ProductDesc_id_product_fkey")
+
+  @@index([product_id], map: "fki_ProductDesc_id_product_fkey")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ProductImage {
+  id         Int                    @id(map: "pk_ProductImage") @default(autoincrement()) @db.Integer
+  product_id Int                    @db.Integer
+  imageURL   String                 @db.VarChar(250)
+  isPrimary  Boolean
+  iStatus    MasterRecordStatusEnum @default(ACTIVE)
+  createdBy  String?                @db.Char(50)
+  createdAt  DateTime               @default(now()) @db.Timestamptz(3)
+  updatedBy  String?                @db.Char(50)
+  updatedAt  DateTime?              @db.Timestamptz(3)
+  Product    Product                @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ProductImage_id_Product_fkey")
+
+  @@index([product_id], map: "fki_ProductImage_id_Product_fkey")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+// model ProductSpec {
+//   id                 Int       @id(map: "pk_ProductSpec") @default(autoincrement()) @db.Integer
+//   itemFunctions      String?   @db.VarChar(250)
+//   item_type          String?   @db.VarChar(100)
+//   item_model         String?   @db.VarChar(100)
+//   construction       String?
+//   mattress           String?   @db.VarChar(250)
+//   mattressSize       String?   @db.VarChar(250)
+//   mattressThickness  String?   @db.VarChar(250)
+//   finishing          String?   @db.VarChar(250)
+//   dimension          String?   @db.VarChar(250)
+//   powerSupply        String?   @db.VarChar(150)
+//   loadCapacity       String?   @db.VarChar(150)
+//   systemFilter       String?   @db.VarChar(180)
+//   accessories        String?   @db.VarChar(250)
+//   sideRail           String?   @db.VarChar(180)
+//   ivStand            String?   @db.VarChar(180)
+//   wheels             String?   @db.VarChar(150)
+//   maxLoad            String?   @db.VarChar(150)
+//   size               String?   @db.VarChar(150)
+//   weight             String?   @db.VarChar(150)
+//   standSize          String?   @db.VarChar(150)
+//   position           String?   @db.VarChar(150)
+//   base               String?   @db.VarChar(150)
+//   basePlate          String?   @db.VarChar(180)
+//   cover              String?   @db.VarChar(150)
+//   material           String?   @db.VarChar(150)
+//   coverMaterial      String?   @db.VarChar(150)
+//   typeScreen         String?   @db.VarChar(150)
+//   powerConsumption   String?   @db.VarChar(150)
+//   lamp               String?   @db.VarChar(150)
+//   movers             String?   @db.VarChar(200)
+//   rim                String?   @db.VarChar(200)
+//   custodyFeet        String?   @db.VarChar(200)
+//   foot               String?   @db.VarChar(200)
+//   footWear           String?   @db.VarChar(200)
+//   pole               String?   @db.VarChar(200)
+//   inputVoltage       String?   @db.VarChar(150)
+//   outputVoltage      String?   @db.VarChar(150)
+//   sideGuard          String?   @db.VarChar(250)
+//   footandheadPanel   String?   @db.VarChar(250)
+//   temperatureControl String?   @db.VarChar(250)
+//   top                String?   @db.VarChar(150)
+//   foodTray           String?   @db.VarChar(250)
+//   traycorpse         String?   @db.VarChar(250)
+//   pillowthecorpse    String?   @db.VarChar(250)
+//   lightPole          String?   @db.VarChar(250)
+//   sterilizing        String?   @db.VarChar(250)
+//   filter             String?   @db.VarChar(250)
+//   bodyFrame          String?   @db.VarChar(250)
+//   underPressure      String?   @db.VarChar(250)
+//   foundationTray     String?   @db.VarChar(250)
+//   door               String?   @db.VarChar(250)
+//   handle             String?   @db.VarChar(250)
+//   medicineBox        String?   @db.VarChar(250)
+//   handleTrolley      String?   @db.VarChar(250)
+//   drawer             String?   @db.VarChar(250)
+//   systemControl      String?   @db.VarChar(250)
+//   bodyFrameWork      String?   @db.VarChar(250)
+//   remarks            String?
+//   createdBy          String?   @db.Char(10)
+//   createdAt          DateTime? @default(now())
+//   updatedBy          String?   @db.Char(10)
+//   updatedAt          DateTime
+//   product_id         Int       @db.SmallInt
+//   Product            Product?  @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ProductSPec_id_product_fkey")
+
+//   @@index([product_id], map: "fki_ProductSPec_id_product_fkey")
+// }
+
+model sys_Migration_log {
+  id             Int      @id @default(autoincrement())
+  from_tableName String
+  to_tableName   String
+  migratedAt     DateTime
+  status         String
+}
+
+model sys_Role {
+  id      String                 @id @db.Char(20)
+  name    String                 @db.VarChar(20)
+  iStatus MasterRecordStatusEnum @default(ACTIVE)
+  remarks String?                @db.VarChar(255)
+}
+
+model User {
+  // id                 Int                     @id @default(autoincrement()) @db.SmallInt
+  // name               String                  @unique @db.VarChar(50)
+  // email              String                  @db.VarChar(100)
+  // isAdmin            Boolean                 @default(false)
+  // iStatus            MasterRecordStatusEnum? @default(ACTIVE)
+  // image              String?                 @db.VarChar(255)
+  // password           String                  @db.VarChar(255)
+  // hashedRefreshToken String?                 @db.VarChar(255)
+  id       Int     @id @default(autoincrement()) @db.SmallInt
+  username String  @unique @db.VarChar(50)
+  password String  @db.VarChar(100)
+  name     String  @db.VarChar(100)
+  isAdmin  Boolean @default(false)
+  token    String? @db.VarChar(100)
+
+  @@map("Users")
+}
+
+enum MasterRecordStatusEnum {
+  INACTIVE @map("0")
+  ACTIVE   @map("1")
+}
+
+// enum TransactionRecordStatusEnum {
+//   DRAFT    @map("0")
+//   APPROVED @map("1")
+//   PENDING  @map("2")
+//   CANCEL   @map("3")
+// }
+
+enum WebsiteDisplayStatus {
+  HIDDEN @map("0")
+  SHOW   @map("1")
+}
