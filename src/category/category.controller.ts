@@ -49,5 +49,18 @@ export class CategoryController {
         }
     }
 
+    @Get('/findbyid/:id')
+    async findByID(
+        @Param('id') id: string,
+    ): Promise<webResponse<CategoryResponse>> {
+        const parseId = parseInt(id);
+        const result = await this.categoryService.findById(parseId);
+        return {
+            data: result
+        }
+    }
+
+
+
 
 }

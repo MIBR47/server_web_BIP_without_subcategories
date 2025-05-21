@@ -14,8 +14,8 @@ model Billboard {
   isShowBtn     Boolean?
   btnText       String?                @db.VarChar(50)
   isImage       Boolean?
-  iStatus       MasterRecordStatusEnum @default(ACTIVE)
-  iShowedStatus WebsiteDisplayStatus   @default(SHOW)
+  iStatus       MasterRecordStatusEnum @default(Active)
+  iShowedStatus WebsiteDisplayStatus   @default(Hidden)
   remarks       String?                @db.VarChar(250)
   createdBy     String?                @db.VarChar(50)
   createdAt     DateTime?              @default(now()) @db.Timestamptz(3)
@@ -33,7 +33,7 @@ model news {
   article       String?
   // iStatus       MasterRecordStatusEnum @default(ACTIVE)
   imageURL      String?              @db.VarChar(250)
-  iShowedStatus WebsiteDisplayStatus @default(SHOW)
+  iShowedStatus WebsiteDisplayStatus @default(Hidden)
   remarks       String?              @db.VarChar(250)
   newsTime      DateTime?            @default(now()) @db.Timestamptz(3)
   createdBy     String?              @db.VarChar(50)
@@ -50,8 +50,8 @@ model Category {
   name          String                 @db.VarChar(80)
   slug          String?                @unique @db.VarChar(50)
   remarks       String?                @db.VarChar(250)
-  iStatus       MasterRecordStatusEnum @default(ACTIVE)
-  iShowedStatus WebsiteDisplayStatus   @default(SHOW)
+  iStatus       MasterRecordStatusEnum @default(Active)
+  iShowedStatus WebsiteDisplayStatus   @default(Hidden)
   imageURL      String?                @db.VarChar(250)
   createdBy     String                 @db.VarChar(50)
   createdAt     DateTime               @default(now()) @db.Timestamptz(3)
@@ -71,8 +71,8 @@ model SubCategory {
   slug          String?                @unique @db.VarChar(50)
   remarks       String?                @db.VarChar(250)
   category_id   Int                    @db.Integer
-  iStatus       MasterRecordStatusEnum @default(ACTIVE)
-  iShowedStatus WebsiteDisplayStatus   @default(SHOW)
+  iStatus       MasterRecordStatusEnum @default(Active)
+  iShowedStatus WebsiteDisplayStatus   @default(Hidden)
   imageURL      String?                @db.VarChar(250)
   createdBy     String                 @db.VarChar(50)
   createdAt     DateTime               @default(now()) @db.Timestamptz(3)
@@ -96,8 +96,8 @@ model Product {
   category_id   Int                    @db.Integer
   eCatalogURL   String?                @db.VarChar(250)
   remarks       String?                @db.VarChar(250)
-  iStatus       MasterRecordStatusEnum @default(ACTIVE)
-  iShowedStatus WebsiteDisplayStatus   @default(SHOW)
+  iStatus       MasterRecordStatusEnum @default(Active)
+  iShowedStatus WebsiteDisplayStatus   @default(Show)
   // isMaterial    Boolean                @default(false)
   // isService     Boolean                @default(false)
   // isFinishing   Boolean                @default(false)
@@ -107,9 +107,11 @@ model Product {
   updatedBy     String?                @db.VarChar(50)
   updatedAt     DateTime?              @db.Timestamptz(3)
   Category      Category               @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Product_id_Category_fkey")
-  ProductDesc   ProductDesc[]
+  ProductDesc   ProductDesc?
   ProductImage  ProductImage[]
   // ProductSpec    ProductSpec[]
+  // productDescId Int                    @db.Integer
+  // productDescId Int                    @unique @db.Integer
 
   @@index([category_id], map: "fki_Product_id_Category_fkey")
   @@map("Products")
@@ -124,10 +126,11 @@ model ProductDesc {
   createdAt    DateTime  @default(now()) @db.Timestamptz(3)
   updatedBy    String?   @db.VarChar(50)
   updatedAt    DateTime? @db.Timestamptz(3)
-  product_id   Int       @db.Integer
-  Product      Product   @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ProductDesc_id_product_fkey")
+  product_id   Int       @unique @db.Integer
+  Product      Product   @relation(fields: [product_id], references: [id])
+  // @relation(fields: [product_id], references: [id], map: "ProductDesc_id_product_fkey")
 
-  @@index([product_id], map: "fki_ProductDesc_id_product_fkey")
+  // @@index([product_id], map: "fki_ProductDesc_id_product_fkey")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
@@ -136,7 +139,7 @@ model ProductImage {
   product_id Int                    @db.Integer
   imageURL   String                 @db.VarChar(250)
   isPrimary  Boolean
-  iStatus    MasterRecordStatusEnum @default(ACTIVE)
+  iStatus    MasterRecordStatusEnum @default(Active)
   createdBy  String?                @db.VarChar(50)
   createdAt  DateTime               @default(now()) @db.Timestamptz(3)
   updatedBy  String?                @db.VarChar(50)
@@ -228,7 +231,7 @@ model sys_Migration_log {
 model sys_Role {
   id      String                 @id @db.Char(20)
   name    String                 @db.VarChar(20)
-  iStatus MasterRecordStatusEnum @default(ACTIVE)
+  iStatus MasterRecordStatusEnum @default(Active)
   remarks String?                @db.VarChar(255)
 }
 
@@ -252,8 +255,8 @@ model User {
 }
 
 enum MasterRecordStatusEnum {
-  INACTIVE @map("0")
-  ACTIVE   @map("1")
+  Inactive @map("0")
+  Active   @map("1")
 }
 
 // enum TransactionRecordStatusEnum {
@@ -264,6 +267,6 @@ enum MasterRecordStatusEnum {
 // }
 
 enum WebsiteDisplayStatus {
-  HIDDEN @map("0")
-  SHOW   @map("1")
+  Hidden @map("0")
+  Show   @map("1")
 }

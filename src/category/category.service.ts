@@ -70,7 +70,7 @@ export class CategoryService {
         // category_id: number,
     ): Promise<CategoryResponse[]> {
         const Categories = await this.prismaService.category.findMany({
-            where: { iShowedStatus: 'SHOW' },
+            where: { iShowedStatus: 'Show' },
         });
 
         const allCategory = Categories.map((category) => {
@@ -122,6 +122,16 @@ export class CategoryService {
         //         // primaryImageURL,
         //     };
         // });
+
+        return Categories as CategoryResponse;
+    }
+
+    async findById(
+        id: number,
+    ): Promise<CategoryResponse> {
+        const Categories = await this.prismaService.category.findUnique({
+            where: { id },
+        })
 
         return Categories as CategoryResponse;
     }

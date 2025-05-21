@@ -29,6 +29,7 @@ export class ProductController {
             data: result
         };
     }
+
     @Post('/admin/createDescProduct')
     @HttpCode(200)
     async createDescProduct(@Auth() user: User, @Body() request: ProductDescRequest): Promise<webResponse<ProductDescResponse>> {
@@ -59,15 +60,37 @@ export class ProductController {
         }
     }
 
-    @Get('/findbyid/:id')
-    async findByID(
-        @Param('category_id') category_id: number,
+    @Get('/findbyid/:category_id')
+    async findByCategoryID(
+        @Param('category_id') category_id: string,
     ): Promise<webResponse<ProductResponse[]>> {
-        const result = await this.productService.findbyid(category_id);
+        const parseCategory_id = parseInt(category_id);
+        const result = await this.productService.findbyCategoryId(parseCategory_id);
         return {
             data: result
         }
     }
+
+    @Get('/findbyslug/:slug')
+    async findBySlug(
+        @Param('slug') slug: string,
+    ): Promise<webResponse<ProductResponse>> {
+        const result = await this.productService.findbyslug(slug);
+        return {
+            data: result
+        }
+    }
+
+    @Get('/findbyname/:name')
+    async findByName(
+        @Param('name') name: string,
+    ): Promise<webResponse<ProductResponse[]>> {
+        const result = await this.productService.findbyname(name);
+        return {
+            data: result
+        }
+    }
+
 
 
 }

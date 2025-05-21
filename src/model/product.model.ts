@@ -2,6 +2,7 @@ import { MasterRecordStatusEnum, ProductDesc, ProductImage, WebsiteDisplayStatus
 
 
 export class ProductResponse {
+    id: number;
     catalog_id: string;
     name: string;
     slug: string;
