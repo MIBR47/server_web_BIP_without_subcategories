@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
@@ -135,4 +135,57 @@ export class CategoryService {
 
         return Categories as CategoryResponse;
     }
+    async delete(user: User, id: number): Promise<void> {
+        const existing = await this.prismaService.category.findUnique({
+            where: { id }
+        });
+
+        if (!existing) {
+            throw new HttpException('Category not found', 404);
+        }
+        // Cek apakah masih ada produk yang pakai kategori ini
+        const productCount = await this.prismaService.product.count({
+            where: { category_id: id },
+        });
+
+        if (productCount > 0) {
+            throw new HttpException('Category masih digunakan oleh produk', HttpStatus.BAD_REQUEST);
+        }
+        // Jika aman, hapus kategori
+        await this.prismaService.category.delete({
+            where: { id }
+        });
+
+        this.logger.info(`Category with id ${id} deleted by ${user.name}`);
+    }
+
+    async update(user: User, id: number, request: CreateCategoryRequest): Promise<CategoryResponse> {
+        const existing = await this.prismaService.category.findUnique({
+            where: { id }
+        });
+
+        if (!existing) {
+            throw new HttpException('Category not found', 404);
+        }
+
+        const updateRequest: CreateCategoryRequest = this.validationService.validate(CategoryValidation.CREATE, request);
+
+        const updated = await this.prismaService.category.update({
+            where: { id },
+            data: {
+                ...updateRequest,
+                updatedBy: user.name
+            }
+        });
+
+        return {
+            name: updated.name,
+            slug: updated.slug ?? '',
+            remarks: updated.remarks ?? '',
+            iStatus: updated.iStatus,
+            iShowedStatus: updated.iShowedStatus,
+            imageURL: updated.imageURL ?? ''
+        };
+    }
+
 }

@@ -7,12 +7,13 @@ import {
     Param,
     Patch,
     Post,
+    Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Auth } from 'src/common/auth.decorator';
 import { User } from '@prisma/client';
 import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse } from 'src/model/product.model';
-import { webResponse } from 'src/model/web.model';
+import { webResponse, webResponseWithTotal } from 'src/model/web.model';
 import * as request from 'supertest';
 
 @Controller('/api/product')
@@ -52,13 +53,19 @@ export class ProductController {
 
     @Get('/findall')
     async findAll(
-        // @Body('category_id') category_id: number,
-    ): Promise<webResponse<ProductResponse[]>> {
-        const result = await this.productService.findAll();
+        @Query('page') page = '1',
+        @Query('limit') limit = '20',
+    ): Promise<webResponseWithTotal<ProductResponse[]>> {
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+
+        const result = await this.productService.findAll(pageNumber, limitNumber);
         return {
-            data: result
-        }
+            data: result.data,
+            total: result.total,
+        };
     }
+
 
     @Get('/findbyid/:category_id')
     async findByCategoryID(

@@ -20,7 +20,7 @@ export class ProductResponse {
 export class ProductDescResponse {
     descriptions: string;
     productSpec: string;
-    benefits: string;
+    // benefits: string;
     product_id: number;
     // createdBy: string;
     // productSpec: string;

@@ -58,7 +58,7 @@ export class ProductService {
             catalog_id: product.catalog_id?.trim() ?? "",
             name: product.name,
             slug: product.slug ?? '',
-            remarks: product.remarks ?? '',
+            // remarks: product.remarks ?? '',
             iStatus: product.iStatus,
             iShowedStatus: product.iShowedStatus,
             category_id: product.category_id,
@@ -106,7 +106,7 @@ export class ProductService {
         return {
             descriptions: productDesc.descriptions ?? "",
             productSpec: productDesc.productSpec ?? "",
-            benefits: productDesc.benefits ?? "",
+            // benefits: productDesc.benefits ?? "",
             product_id: productDesc.product_id
         }
 
@@ -144,51 +144,32 @@ export class ProductService {
 
     }
 
-    async findAll(): Promise<ProductResponse[]> {
-        const products = await this.prismaService.product.findMany({
-            where: { iShowedStatus: 'Show' },
-            include: {
-                ProductDesc: {},
-                ProductImage: {},
-            }
-            // include: {
-            //     Product: {
-            //         select: {
-            //             name: true,
-            //             slug: true,
-            //             eCatalogURL: true,
-            //             remarks: true,
-            //             iStatus: true,
-            //             iShowedStatus: true,
-            //             // ProductDesc: true,
-            //             // ProductImage: true,
+    async findAll(page: number = 1, limit: number = 20): Promise<{ data: ProductResponse[], total: number }> {
+        const skip = (page - 1) * limit;
 
-            //         },
-            //     },
-            // },
-        });
+        const [products, total] = await this.prismaService.$transaction([
+            this.prismaService.product.findMany({
+                where: { iShowedStatus: 'Show' },
+                include: {
+                    ProductDesc: true,
+                    ProductImage: true,
+                },
+                skip,
+                take: limit,
+            }),
+            this.prismaService.product.count({
+                where: { iShowedStatus: 'Show' },
+            }),
+        ]);
 
-        const product = products.map((product) => {
-            // const primaryImages = subcategory.images.filter((image) => image.isPrimary);
-            // const primaryImageURL =
-            //     primaryImages.length > 0 ? primaryImages[0].imageURL : null;
-            return {
-                ...product,
-                // id: subcategory.id,
-                // name: subcategory.name.trim(),
-                // slug: subcategory.slug?.trim(),
-                // catalog_id: product.catalog_id?.trim(),
-                // register_id: product.register_id?.trim(),
-                // category_id: subcategory.category_id,
-                // subCategory_id: product.subCategory_id.trim(),
-                // brand_id: product.brand_id.trim(),
-                // uom_id: product.uom_id?.trim(),
-                // primaryImageURL,
-            };
-        });
+        const result = products.map((product) => ({
+            ...product,
+            // Tambahan mapping khusus jika perlu
+        }));
 
-        return product as ProductResponse[];
+        return { data: result as ProductResponse[], total };
     }
+
     async findbyCategoryId(category_id: number): Promise<ProductResponse[]> {
         const products = await this.prismaService.product.findMany({
             where: { category_id },

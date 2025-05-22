@@ -8,7 +8,7 @@ export class ProductValidation {
         slug: z.string().min(1).max(250),
         category_id: z.number(),
         eCatalogURL: z.string().min(1).max(250),
-        remarks: z.string().min(1).max(250),
+        // remarks: z.string().min(1).max(250),
         iStatus: z.nativeEnum(MasterRecordStatusEnum),
         iShowedStatus: z.nativeEnum(WebsiteDisplayStatus),
     });
@@ -18,7 +18,7 @@ export class ProductDescValidation {
     static readonly CREATE: ZodType = z.object({
         descriptions: z.string(),
         productSpec: z.string(),
-        benefits: z.string(),
+        // benefits: z.string(),
         product_id: z.number(),
     })
 }

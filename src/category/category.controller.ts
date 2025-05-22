@@ -29,6 +29,32 @@ export class CategoryController {
         };
     }
 
+    @Delete('/admin/delete/:id')
+    @HttpCode(200)
+    async delete(
+        @Auth() user: User,
+        @Param('id') id: string
+    ): Promise<webResponse<string>> {
+        const parseId = parseInt(id);
+        await this.categoryService.delete(user, parseId);
+        return { data: 'Category deleted successfully' };
+    }
+
+    @Patch('/admin/update/:id')
+    @HttpCode(200)
+    async update(
+        @Auth() user: User,
+        @Param('id') id: string,
+        @Body() request: CreateCategoryRequest
+    ): Promise<webResponse<CategoryResponse>> {
+        const parseId = parseInt(id);
+        const result = await this.categoryService.update(user, parseId, request);
+        return {
+            data: result
+        };
+    }
+
+
     @Get('/findall')
     async findAll(
         // @Body('category_id') category_id: number,
