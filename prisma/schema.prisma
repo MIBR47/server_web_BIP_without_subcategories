@@ -30,12 +30,13 @@ model Billboard {
 model news {
   id            Int                  @id(map: "pk_news") @default(autoincrement()) @db.SmallInt
   title         String
+  slug          String               @unique
   article       String?
   // iStatus       MasterRecordStatusEnum @default(ACTIVE)
   imageURL      String?              @db.VarChar(250)
-  iShowedStatus WebsiteDisplayStatus @default(Hidden)
-  remarks       String?              @db.VarChar(250)
-  newsTime      DateTime?            @default(now()) @db.Timestamptz(0)
+  iShowedStatus WebsiteDisplayStatus @default(Show)
+  // remarks       String?              @db.VarChar(250)
+  newsDate      DateTime?            @default(now()) @db.Timestamptz(0)
   createdBy     String?              @db.VarChar(50)
   createdAt     DateTime?            @default(now()) @db.Timestamptz(0)
   updatedBy     String?              @db.VarChar(50)
@@ -51,7 +52,7 @@ model Category {
   slug          String?                @unique @db.VarChar(50)
   remarks       String?                @db.VarChar(250)
   iStatus       MasterRecordStatusEnum @default(Active)
-  iShowedStatus WebsiteDisplayStatus   @default(Hidden)
+  iShowedStatus WebsiteDisplayStatus   @default(Show)
   imageURL      String?                @db.VarChar(250)
   createdBy     String                 @db.VarChar(50)
   createdAt     DateTime               @default(now()) @db.Timestamptz(0)
@@ -72,7 +73,7 @@ model SubCategory {
   remarks       String?                @db.VarChar(250)
   category_id   Int                    @db.Integer
   iStatus       MasterRecordStatusEnum @default(Active)
-  iShowedStatus WebsiteDisplayStatus   @default(Hidden)
+  iShowedStatus WebsiteDisplayStatus   @default(Show)
   imageURL      String?                @db.VarChar(250)
   createdBy     String                 @db.VarChar(50)
   createdAt     DateTime               @default(now()) @db.Timestamptz(0)
@@ -92,7 +93,7 @@ model Product {
   // register_id   String?                @db.Char(20)
   catalog_id    String?                @db.VarChar(40)
   name          String                 @db.VarChar(250)
-  slug          String?                @db.VarChar(250)
+  slug          String?                @unique @db.VarChar(250)
   category_id   Int                    @db.Integer
   eCatalogURL   String?                @db.VarChar(250)
   // remarks       String?                @db.VarChar(250)
@@ -118,16 +119,16 @@ model Product {
 }
 
 model ProductDesc {
-  id           Int       @id(map: "pk_ProductDesc") @default(autoincrement()) @db.Integer
-  descriptions String?
-  productSpec  String?
+  id          Int       @id(map: "pk_ProductDesc") @default(autoincrement()) @db.Integer
+  other_info  String?
+  productSpec String?
   // benefits     String?
-  createdBy    String    @db.VarChar(50)
-  createdAt    DateTime  @default(now()) @db.Timestamptz(0)
-  updatedBy    String?   @db.VarChar(50)
-  updatedAt    DateTime? @updatedAt @db.Timestamptz(0)
-  product_id   Int       @unique @db.Integer
-  Product      Product   @relation(fields: [product_id], references: [id])
+  createdBy   String    @db.VarChar(50)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(0)
+  updatedBy   String?   @db.VarChar(50)
+  updatedAt   DateTime? @updatedAt @db.Timestamptz(0)
+  product_id  Int       @unique @db.Integer
+  Product     Product   @relation(fields: [product_id], references: [id])
   // @relation(fields: [product_id], references: [id], map: "ProductDesc_id_product_fkey")
 
   // @@index([product_id], map: "fki_ProductDesc_id_product_fkey")

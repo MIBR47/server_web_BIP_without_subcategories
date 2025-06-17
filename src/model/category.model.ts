@@ -24,4 +24,13 @@ export class CreateCategoryRequest {
 
 }
 
+export class UpdateCategoryRequest {
+    id: number;
+    name: string;
+    slug: string;
+    remarks?: string | null;
+    iStatus: MasterRecordStatusEnum;
+    iShowedStatus: WebsiteDisplayStatus;
+    imageURL?: string | null;
+}
 

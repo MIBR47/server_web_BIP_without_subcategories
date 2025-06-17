@@ -7,6 +7,7 @@ import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductI
 import { Logger } from 'winston';
 import { ProductDescValidation, ProductImageValidation, ProductValidation } from './product.validation';
 import * as request from 'supertest';
+import { UpdateCategoryRequest } from 'src/model/category.model';
 
 
 @Injectable()
@@ -40,7 +41,7 @@ export class ProductService {
         });
 
         if (totalproductwithSameName != 0) {
-            throw new HttpException('product already exits', 401);
+            throw new HttpException('product already exits', 409);
         }
 
         const product = await this.prismaService.product.create({
@@ -62,21 +63,7 @@ export class ProductService {
             iStatus: product.iStatus,
             iShowedStatus: product.iShowedStatus,
             category_id: product.category_id,
-            // ProductDesc: [{
-            //     descriptions: productDesc.descriptions ?? " ",
-            //     productSpec: productDesc.productSpec ?? " ",
-            //     product_id: product.id,
-            //     benefits: productDesc.benefits ?? " ",
-
-            // }],
-            // ProductImage: [{
-            //     imageURL: productImage.imageURL ?? " ",
-            //     isPrimary: productImage.isPrimary ?? " ",
-            //     product_id: product.id,
-            //     iStatus: productImage.iStatus ?? " ",
-
-            // }],
-
+            eCatalogURL: product.eCatalogURL
         }
     }
 
@@ -104,7 +91,7 @@ export class ProductService {
 
 
         return {
-            descriptions: productDesc.descriptions ?? "",
+            other_info: productDesc.other_info ?? "",
             productSpec: productDesc.productSpec ?? "",
             // benefits: productDesc.benefits ?? "",
             product_id: productDesc.product_id
@@ -144,6 +131,88 @@ export class ProductService {
 
     }
 
+    async update(user: User, request: UpdateCategoryRequest): Promise<ProductResponse> {
+        const updateRequest: UpdateCategoryRequest = this.validationService.validate(ProductValidation.UPDATE, request);
+
+        const existingProduct = await this.prismaService.product.findFirst({
+            where: { id: updateRequest.id },
+        });
+
+        if (!existingProduct) {
+            throw new HttpException('product not found', 404);
+        }
+
+        const updated = await this.prismaService.product.update({
+            where: { id: updateRequest.id },
+            data: {
+                ...updateRequest,
+                updatedBy: user.name,
+            },
+        });
+
+        return {
+            ...updated,
+            slug: updated.slug ?? "",
+            catalog_id: updated.catalog_id?.trim() ?? "",
+            eCatalogURL: updated.eCatalogURL ?? "",
+        };
+    }
+
+    async updateDesc(user: User, request: ProductDescRequest): Promise<ProductDescResponse> {
+        const updateRequest = this.validationService.validate(ProductDescValidation.UPDATE, request);
+
+        const existingDesc = await this.prismaService.productDesc.findFirst({
+            where: { id: updateRequest.id },
+        });
+
+        if (!existingDesc) {
+            throw new HttpException('description not found', 404);
+        }
+
+        const updated = await this.prismaService.productDesc.update({
+            where: { id: existingDesc.id },
+            data: {
+                ...updateRequest,
+                updatedBy: user.name,
+            },
+        });
+
+        return {
+            other_info: updated.other_info ?? "",
+            productSpec: updated.productSpec ?? "",
+            product_id: updated.product_id,
+        };
+    }
+
+    async updateImage(user: User, request: ProductImageRequest): Promise<ProductImageResponse> {
+        const updateRequest = this.validationService.validate(ProductImageValidation.UPDATE, request);
+
+        const existingImage = await this.prismaService.productImage.findFirst({
+            where: { id: updateRequest.id },
+        });
+
+        if (!existingImage) {
+            throw new HttpException('image not found', 404);
+        }
+
+        const updated = await this.prismaService.productImage.update({
+            where: { id: updateRequest.id },
+            data: {
+                ...updateRequest,
+                updatedBy: user.name,
+            },
+        });
+
+        return {
+            imageURL: updated.imageURL,
+            product_id: updated.product_id,
+            isPrimary: updated.isPrimary,
+            iStatus: updated.iStatus,
+        };
+    }
+
+
+
     async findAll(page: number = 1, limit: number = 20): Promise<{ data: ProductResponse[], total: number }> {
         const skip = (page - 1) * limit;
 
@@ -177,41 +246,14 @@ export class ProductService {
                 ProductDesc: {},
                 ProductImage: {},
             }
-            // include: {
-            //     Product: {
-            //         select: {
-            //             name: true,
-            //             slug: true,
-            //             eCatalogURL: true,
-            //             remarks: true,
-            //             iStatus: true,
-            //             iShowedStatus: true,
-            //             // ProductDesc: true,
-            //             // ProductImage: true,
-
-            //         },
-            //     },
-            // },
         });
 
         console.log(products);
 
         const product = products.map((product) => {
-            // const primaryImages = subcategory.images.filter((image) => image.isPrimary);
-            // const primaryImageURL =
-            //     primaryImages.length > 0 ? primaryImages[0].imageURL : null;
+
             return {
                 ...product,
-                // id: subcategory.id,
-                // name: subcategory.name.trim(),
-                // slug: subcategory.slug?.trim(),
-                // catalog_id: product.catalog_id?.trim(),
-                // register_id: product.register_id?.trim(),
-                // category_id: subcategory.category_id,
-                // subCategory_id: product.subCategory_id.trim(),
-                // brand_id: product.brand_id.trim(),
-                // uom_id: product.uom_id?.trim(),
-                // primaryImageURL,
             };
         });
 
@@ -225,21 +267,6 @@ export class ProductService {
                 ProductDesc: true,
                 ProductImage: {},
             }
-            // include: {
-            //     Product: {
-            //         select: {
-            //             name: true,
-            //             slug: true,
-            //             eCatalogURL: true,
-            //             remarks: true,
-            //             iStatus: true,
-            //             iShowedStatus: true,
-            //             // ProductDesc: true,
-            //             // ProductImage: true,
-
-            //         },
-            //     },
-            // },
         });
 
 
@@ -258,21 +285,6 @@ export class ProductService {
                 ProductDesc: true,
                 ProductImage: {},
             }
-            // include: {
-            //     Product: {
-            //         select: {
-            //             name: true,
-            //             slug: true,
-            //             eCatalogURL: true,
-            //             remarks: true,
-            //             iStatus: true,
-            //             iShowedStatus: true,
-            //             // ProductDesc: true,
-            //             // ProductImage: true,
-
-            //         },
-            //     },
-            // },
         });
 
 

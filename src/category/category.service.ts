@@ -8,8 +8,8 @@ import { ValidationService } from 'src/common/validation.service';
 import { Logger } from 'winston';
 // import { v4 as uuid } from 'uuid';
 import { CategoryValidation } from './category.validation';
-import { CategoryResponse, CreateCategoryRequest } from 'src/model/category.model';
-import { User, Category } from '@prisma/client';
+import { CategoryResponse, CreateCategoryRequest, UpdateCategoryRequest } from 'src/model/category.model';
+import { User } from '@prisma/client';
 
 
 @Injectable()
@@ -70,7 +70,7 @@ export class CategoryService {
         // category_id: number,
     ): Promise<CategoryResponse[]> {
         const Categories = await this.prismaService.category.findMany({
-            where: { iShowedStatus: 'Show' },
+            // where: { iShowedStatus: 'Show' },
         });
 
         const allCategory = Categories.map((category) => {
@@ -159,33 +159,67 @@ export class CategoryService {
         this.logger.info(`Category with id ${id} deleted by ${user.name}`);
     }
 
-    async update(user: User, id: number, request: CreateCategoryRequest): Promise<CategoryResponse> {
+    // async update(user: User, id: number, request: CreateCategoryRequest): Promise<CategoryResponse> {
+    //     const existing = await this.prismaService.category.findUnique({
+    //         where: { id }
+    //     });
+
+    //     if (!existing) {
+    //         throw new HttpException('Category not found', 404);
+    //     }
+
+    //     const updateRequest: CreateCategoryRequest = this.validationService.validate(CategoryValidation.CREATE, request);
+
+    //     const updated = await this.prismaService.category.update({
+    //         where: { id },
+    //         data: {
+    //             ...updateRequest,
+    //             updatedBy: user.name
+    //         }
+    //     });
+
+    //     return {
+    //         name: updated.name,
+    //         slug: updated.slug ?? '',
+    //         remarks: updated.remarks ?? '',
+    //         iStatus: updated.iStatus,
+    //         iShowedStatus: updated.iShowedStatus,
+    //         imageURL: updated.imageURL ?? ''
+    //     };
+    // }
+    async update(user: User, request: UpdateCategoryRequest): Promise<CategoryResponse> {
         const existing = await this.prismaService.category.findUnique({
-            where: { id }
+            where: { id: request.id },
         });
 
         if (!existing) {
             throw new HttpException('Category not found', 404);
         }
 
-        const updateRequest: CreateCategoryRequest = this.validationService.validate(CategoryValidation.CREATE, request);
-
         const updated = await this.prismaService.category.update({
-            where: { id },
+            where: { id: request.id },
             data: {
-                ...updateRequest,
-                updatedBy: user.name
-            }
+                name: request.name,
+                slug: request.slug,
+                remarks: request.remarks,
+                iStatus: request.iStatus,
+                iShowedStatus: request.iShowedStatus,
+                imageURL: request.imageURL,
+                updatedBy: user.name,
+                updatedAt: new Date(),
+            },
         });
 
         return {
+            // id: updated.id,
             name: updated.name,
             slug: updated.slug ?? '',
             remarks: updated.remarks ?? '',
             iStatus: updated.iStatus,
             iShowedStatus: updated.iShowedStatus,
-            imageURL: updated.imageURL ?? ''
+            imageURL: updated.imageURL ?? '',
         };
     }
+
 
 }

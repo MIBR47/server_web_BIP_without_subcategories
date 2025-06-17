@@ -13,6 +13,7 @@ import { UserService } from './user.service';
 // import { CreateDto } from './dto/create-.dto';
 // import { UpdateDto } from './dto/update-.dto';
 // import { sService } from './s.service';
+import { Headers } from '@nestjs/common';
 import { webResponse } from '../model/web.model';
 import { LoginUserRequestModel, RegisterUserRequestModel, UserResponseModel } from '../model/user.model';
 
@@ -20,6 +21,14 @@ import { LoginUserRequestModel, RegisterUserRequestModel, UserResponseModel } fr
 export class UserController {
   constructor(private userService: UserService) { }
 
+  @Get('/me')
+  @HttpCode(200)
+  async getProfile(@Headers('Authorization') token: string): Promise<webResponse<UserResponseModel>> {
+    const result = await this.userService.getProfile(token);
+    return {
+      data: result,
+    };
+  }
   @Post('/register')
   @HttpCode(200)
   async create(@Body() request: RegisterUserRequestModel): Promise<webResponse<UserResponseModel>> {

@@ -6,8 +6,8 @@ export class ProductResponse {
     catalog_id: string;
     name: string;
     slug: string;
-    eCatalogURL?: string;
-    remarks?: string;
+    eCatalogURL: string | null;
+    // remarks: string | null;
     iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
     category_id: number;
@@ -18,7 +18,7 @@ export class ProductResponse {
 }
 
 export class ProductDescResponse {
-    descriptions: string;
+    other_info: string;
     productSpec: string;
     // benefits: string;
     product_id: number;
@@ -27,9 +27,9 @@ export class ProductDescResponse {
 }
 
 export class ProductDescRequest {
-    descriptions: string;
+    other_info: string;
     productSpec: string;
-    benefits: string;
+    // benefits: string;
     product_id: number;
     createdBy: string;
     // productSpec: string;
@@ -47,12 +47,30 @@ export class ProductImageRequest {
     product_id: number;
     isPrimary: boolean;
     iStatus: MasterRecordStatusEnum;
-    createdBy: string;
+    // createdBy: string;
 
 }
 
 
 export class CreateProductRequest {
+    id: number;
+    catalog_id: string;
+    name: string;
+    slug: string;
+    eCatalogURL?: string;
+    remarks?: string;
+    iStatus: MasterRecordStatusEnum;
+    iShowedStatus: WebsiteDisplayStatus;
+    category_id: number;
+    // ProductDesc: ProductDescRequest[];
+    // ProductImage: ProductImageRequest[];
+    // createdBy: string;
+    // createdAt?: Date;
+
+}
+
+export class UpdateProductRequest {
+    id: number;
     catalog_id: string;
     name: string;
     slug: string;

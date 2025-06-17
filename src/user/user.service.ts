@@ -21,6 +21,26 @@ export class UserService {
     ) {
 
     }
+
+    async getProfile(token: string): Promise<UserResponseModel> {
+        if (!token) {
+            throw new HttpException('Token tidak ditemukan', 401);
+        }
+
+        const user = await this.prismaService.user.findFirst({
+            where: { token },
+        });
+
+        if (!user) {
+            throw new HttpException('Token tidak valid', 401);
+        }
+
+        return {
+            username: user.username,
+            name: user.name,
+            token: user.token ?? '',
+        };
+    }
     //Register user
     async create(request: RegisterUserRequestModel): Promise<UserResponseModel> {
 
