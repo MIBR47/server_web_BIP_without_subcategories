@@ -5,9 +5,9 @@ export class CategoryResponse {
     name: string;
     slug: string;
     remarks?: string;
-    iStatus: MasterRecordStatusEnum;
+    // iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
-    imageURL?: string;
+    imageURL?: string | null;
     // ProductDesc: ProductDesc[]
 
 }
@@ -16,9 +16,9 @@ export class CreateCategoryRequest {
     name: string;
     slug: string;
     remarks?: string;
-    iStatus: MasterRecordStatusEnum;
+    // iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
-    imageURL?: string;
+    imageURL?: string | null;
     // createdBy: string;
     // createdAt: Date;
 
@@ -29,7 +29,7 @@ export class UpdateCategoryRequest {
     name: string;
     slug: string;
     remarks?: string | null;
-    iStatus: MasterRecordStatusEnum;
+    // iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
     imageURL?: string | null;
 }

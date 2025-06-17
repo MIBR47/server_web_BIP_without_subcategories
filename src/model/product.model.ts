@@ -8,7 +8,7 @@ export class ProductResponse {
     slug: string;
     eCatalogURL: string | null;
     // remarks: string | null;
-    iStatus: MasterRecordStatusEnum;
+    // iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
     category_id: number;
     // isImage: boolean;
@@ -59,7 +59,7 @@ export class CreateProductRequest {
     slug: string;
     eCatalogURL?: string;
     remarks?: string;
-    iStatus: MasterRecordStatusEnum;
+    // iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
     category_id: number;
     // ProductDesc: ProductDescRequest[];
@@ -76,7 +76,7 @@ export class UpdateProductRequest {
     slug: string;
     eCatalogURL?: string;
     remarks?: string;
-    iStatus: MasterRecordStatusEnum;
+    // iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
     category_id: number;
     // ProductDesc: ProductDescRequest[];

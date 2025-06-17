@@ -107,6 +107,28 @@ export class NewsService {
     //     });
     // }
 
+    async findAllAdmin(page: number = 1, limit: number = 20): Promise<{ data: NewsResponse[], total: number }> {
+        const skip = (page - 1) * limit;
+
+        const [news, total] = await this.prismaService.$transaction([
+            this.prismaService.news.findMany({
+                // where: { iShowedStatus: 'Show' },
+                skip,
+                take: limit,
+            }),
+            this.prismaService.news.count({
+                // where: { iShowedStatus: 'Show' },
+            }),
+        ]);
+
+        const result = news.map((news) => ({
+            ...news,
+            // Tambahan mapping khusus jika perlu
+        }));
+
+        return { data: result as NewsResponse[], total };
+    }
+
     async findAll(page: number = 1, limit: number = 20): Promise<{ data: NewsResponse[], total: number }> {
         const skip = (page - 1) * limit;
 

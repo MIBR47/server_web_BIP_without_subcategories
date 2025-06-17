@@ -5,7 +5,7 @@ export class SubCategoryResponse {
     slug: string;
     remarks?: string;
     categoryId: number;
-    iStatus: MasterRecordStatusEnum;
+    // iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
     imageURL?: string;
     // ProductDesc: ProductDesc[]
@@ -17,7 +17,7 @@ export class CreateSubCategoryRequest {
     slug: string;
     remarks?: string;
     categoryId: number;
-    iStatus: MasterRecordStatusEnum;
+    // iStatus: MasterRecordStatusEnum;
     iShowedStatus: WebsiteDisplayStatus;
     imageURL?: string;
     // createdBy: string;

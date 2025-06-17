@@ -93,7 +93,15 @@ export class CategoryController {
         return { data };
     }
 
-
+    @Get('/findall/admin')
+    async findAllAmin(
+        // @Body('category_id') category_id: number,
+    ): Promise<webResponse<CategoryResponse[]>> {
+        const result = await this.categoryService.findAllAdmin();
+        return {
+            data: result
+        }
+    }
 
     @Get('/findall')
     async findAll(

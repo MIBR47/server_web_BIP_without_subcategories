@@ -47,17 +47,17 @@ model news {
 }
 
 model Category {
-  id            Int                    @id(map: "pk_Category") @default(autoincrement()) @db.Integer
-  name          String                 @db.VarChar(80)
-  slug          String?                @unique @db.VarChar(50)
-  remarks       String?                @db.VarChar(250)
-  iStatus       MasterRecordStatusEnum @default(Active)
-  iShowedStatus WebsiteDisplayStatus   @default(Show)
-  imageURL      String?                @db.VarChar(250)
-  createdBy     String                 @db.VarChar(50)
-  createdAt     DateTime               @default(now()) @db.Timestamptz(0)
-  updatedBy     String?                @db.VarChar(50)
-  updatedAt     DateTime?              @updatedAt @db.Timestamptz(0)
+  id            Int                  @id(map: "pk_Category") @default(autoincrement()) @db.Integer
+  name          String               @db.VarChar(80)
+  slug          String?              @unique @db.VarChar(50)
+  remarks       String?              @db.VarChar(250)
+  // iStatus       MasterRecordStatusEnum @default(Active)
+  iShowedStatus WebsiteDisplayStatus @default(Show)
+  imageURL      String?              @db.VarChar(250)
+  createdBy     String               @db.VarChar(50)
+  createdAt     DateTime             @default(now()) @db.Timestamptz(0)
+  updatedBy     String?              @db.VarChar(50)
+  updatedAt     DateTime?            @updatedAt @db.Timestamptz(0)
   // href          String?                @db.VarChar(150)
   // icon          String?                @db.VarChar(50)
   // SubCategory   SubCategory[]
@@ -89,25 +89,25 @@ model SubCategory {
 }
 
 model Product {
-  id            Int                    @id(map: "pk_Product") @default(autoincrement()) @db.Integer
+  id            Int                  @id(map: "pk_Product") @default(autoincrement()) @db.Integer
   // register_id   String?                @db.Char(20)
-  catalog_id    String?                @db.VarChar(40)
-  name          String                 @db.VarChar(250)
-  slug          String?                @unique @db.VarChar(250)
-  category_id   Int                    @db.Integer
-  eCatalogURL   String?                @db.VarChar(250)
+  catalog_id    String?              @db.VarChar(40)
+  name          String               @db.VarChar(250)
+  slug          String?              @unique @db.VarChar(250)
+  category_id   Int                  @db.Integer
+  eCatalogURL   String?              @db.VarChar(250)
   // remarks       String?                @db.VarChar(250)
-  iStatus       MasterRecordStatusEnum @default(Active)
-  iShowedStatus WebsiteDisplayStatus   @default(Show)
+  // iStatus       MasterRecordStatusEnum @default(Active)
+  iShowedStatus WebsiteDisplayStatus @default(Show)
   // isMaterial    Boolean                @default(false)
   // isService     Boolean                @default(false)
   // isFinishing   Boolean                @default(false)
   // isAccessories Boolean                @default(false)
-  createdBy     String                 @db.VarChar(50)
-  createdAt     DateTime               @default(now()) @db.Timestamptz(0)
-  updatedBy     String?                @db.VarChar(50)
-  updatedAt     DateTime?              @updatedAt @db.Timestamptz(0)
-  Category      Category               @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Product_id_Category_fkey")
+  createdBy     String               @db.VarChar(50)
+  createdAt     DateTime             @default(now()) @db.Timestamptz(0)
+  updatedBy     String?              @db.VarChar(50)
+  updatedAt     DateTime?            @updatedAt @db.Timestamptz(0)
+  Category      Category             @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Product_id_Category_fkey")
   ProductDesc   ProductDesc?
   ProductImage  ProductImage[]
   // ProductSpec    ProductSpec[]

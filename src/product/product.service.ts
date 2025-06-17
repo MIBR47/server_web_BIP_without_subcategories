@@ -60,7 +60,7 @@ export class ProductService {
             name: product.name,
             slug: product.slug ?? '',
             // remarks: product.remarks ?? '',
-            iStatus: product.iStatus,
+            // iStatus: product.iStatus,
             iShowedStatus: product.iShowedStatus,
             category_id: product.category_id,
             eCatalogURL: product.eCatalogURL
@@ -209,6 +209,32 @@ export class ProductService {
             isPrimary: updated.isPrimary,
             iStatus: updated.iStatus,
         };
+    }
+
+    async findAllAdmin(page: number = 1, limit: number = 20): Promise<{ data: ProductResponse[], total: number }> {
+        const skip = (page - 1) * limit;
+
+        const [products, total] = await this.prismaService.$transaction([
+            this.prismaService.product.findMany({
+                // where: { iShowedStatus: 'Show' },
+                include: {
+                    ProductDesc: true,
+                    ProductImage: true,
+                },
+                skip,
+                take: limit,
+            }),
+            this.prismaService.product.count({
+                // where: { iShowedStatus: 'Show' },
+            }),
+        ]);
+
+        const result = products.map((product) => ({
+            ...product,
+            // Tambahan mapping khusus jika perlu
+        }));
+
+        return { data: result as ProductResponse[], total };
     }
 
 

@@ -114,6 +114,21 @@ export class ProductController {
     }
 
 
+    @Get('/admin/findall')
+    async findAllAdmin(
+        @Query('page') page = '1',
+        @Query('limit') limit = '20',
+    ): Promise<webResponseWithTotal<ProductResponse[]>> {
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+
+        const result = await this.productService.findAll(pageNumber, limitNumber);
+        return {
+            data: result.data,
+            total: result.total,
+        };
+    }
+
     @Get('/findall')
     async findAll(
         @Query('page') page = '1',
