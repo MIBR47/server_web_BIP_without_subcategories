@@ -14,7 +14,7 @@ import {
 import { ProductService } from './product.service';
 import { Auth } from 'src/common/auth.decorator';
 import { User } from '@prisma/client';
-import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse } from 'src/model/product.model';
+import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse, UpdateProductImageRequest } from 'src/model/product.model';
 import { webResponse, webResponseWithTotal } from 'src/model/web.model';
 import * as request from 'supertest';
 import { UpdateCategoryRequest } from 'src/model/category.model';
@@ -106,13 +106,59 @@ export class ProductController {
         return { data: result };
     }
 
-    @Patch('/admin/updateImageProduct')
+    @Patch('/admin/updateImageProduct/:id')
     @HttpCode(200)
-    async updateImageProduct(@Auth() user: User, @Body() request: ProductImageRequest): Promise<webResponse<ProductImageResponse>> {
-        const result = await this.productService.updateImage(user, request);
+    async updateImageProduct(
+        @Auth() user: User,
+        @Param('id') id: number,
+        @Body() request: UpdateProductImageRequest,
+    ): Promise<webResponse<ProductImageResponse>> {
+        const result = await this.productService.updateImage(user, request, Number(id));
         return { data: result };
     }
 
+    @Delete('/admin/deleteImageProduct/:id')
+    @HttpCode(200)
+    async delete(
+        @Auth() user: User,
+        @Param('id') id: string
+    ): Promise<webResponse<string>> {
+        const parseId = parseInt(id);
+        await this.productService.delete(user, parseId);
+        return { data: 'product image deleted successfully' };
+    }
+
+
+    // @Patch('/admin/updateImageProduct')
+    // @HttpCode(200)
+    // @UseInterceptors(FileInterceptor('file', {
+    //     storage: diskStorage({
+    //         destination: './uploads/images',
+    //         filename: (req, file, cb) => {
+    //             const uniqueSuffix = uuidv4() + extname(file.originalname);
+    //             cb(null, uniqueSuffix);
+    //         },
+    //     }),
+    // }))
+    // async updateImageProduct(
+    //     @Auth() user: User,
+    //     @UploadedFile() file: Express.Multer.File,
+    //     @Body() body: any,
+    // ): Promise<webResponse<ProductImageResponse>> {
+    //     const newImageURL = file ? `/uploads/images/${file.filename}` : body.imageURL || null;
+    //     const hasNewFile = !!file;
+
+    //     // const request: ProductImageRequest = {
+    //     //     id: parseInt(body.id),
+    //     //     product_id: parseInt(body.product_id),
+    //     //     iStatus: body.iStatus,
+    //     //     isPrimary: body.isPrimary === 'true',
+    //     //     imageURL: body.imageURL, // tetap dipakai untuk validasi
+    //     // };
+
+    //     const result = await this.productService.updateImage(user, body, newImageURL, hasNewFile);
+    //     return { data: result };
+    // }
 
     @Get('/admin/findall')
     async findAllAdmin(
@@ -122,7 +168,7 @@ export class ProductController {
         const pageNumber = parseInt(page);
         const limitNumber = parseInt(limit);
 
-        const result = await this.productService.findAll(pageNumber, limitNumber);
+        const result = await this.productService.findAllAdmin(pageNumber, limitNumber);
         return {
             data: result.data,
             total: result.total,

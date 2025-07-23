@@ -85,6 +85,15 @@ export class UpdateProductRequest {
     // createdAt?: Date;
 
 }
+export class UpdateProductImageRequest {
+    // id: number;
+    // imageURL: string;
+    product_id: number;
+    isPrimary: boolean;
+    iStatus: MasterRecordStatusEnum;
+    // createdBy: string;
+
+}
 
 
 

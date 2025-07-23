@@ -40,7 +40,7 @@ export class CreateNewsRequest {
 }
 
 export class UpdateNewsRequest {
-    id: number;
+    id: string;
     title: string;
     slug: string;
     article?: string | null;

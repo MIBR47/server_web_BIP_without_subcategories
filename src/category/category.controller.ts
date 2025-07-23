@@ -83,15 +83,37 @@ export class CategoryController {
     //         data: result
     //     };
     // }
+    // @Patch('/admin/update')
+    // @HttpCode(200)
+    // async update(
+    //     @Auth() user: User,
+    //     @Body() body: UpdateCategoryRequest
+    // ): Promise<webResponse<CategoryResponse>> {
+    //     const data = await this.categoryService.update(user, body);
+    //     return { data };
+    // }
+
     @Patch('/admin/update')
     @HttpCode(200)
-    async update(
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: './uploads/category',
+            filename: (req, file, cb) => {
+                const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+                cb(null, uniqueSuffix + extname(file.originalname));
+            },
+        }),
+    })) async update(
         @Auth() user: User,
-        @Body() body: UpdateCategoryRequest
+        @UploadedFile() file: Express.Multer.File,
+        @Body() body: any
     ): Promise<webResponse<CategoryResponse>> {
-        const data = await this.categoryService.update(user, body);
+        const imageURL = file ? `/uploads/category/${file.filename}` : body.imageURL || null;
+
+        const data = await this.categoryService.update(user, body, imageURL, !!file);
         return { data };
     }
+
 
     @Get('/findall/admin')
     async findAllAmin(

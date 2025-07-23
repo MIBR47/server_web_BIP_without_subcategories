@@ -3,11 +3,15 @@ import { User, ProductImage } from '@prisma/client';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
-import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse } from 'src/model/product.model';
+import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse, UpdateProductImageRequest } from 'src/model/product.model';
 import { Logger } from 'winston';
 import { ProductDescValidation, ProductImageValidation, ProductValidation } from './product.validation';
 import * as request from 'supertest';
 import { UpdateCategoryRequest } from 'src/model/category.model';
+
+import { unlinkSync } from 'fs';
+import { join } from 'path';
+
 
 
 @Injectable()
@@ -184,7 +188,7 @@ export class ProductService {
         };
     }
 
-    async updateImage(user: User, request: ProductImageRequest): Promise<ProductImageResponse> {
+    async updateImage(user: User, request: UpdateProductImageRequest, id: number): Promise<ProductImageResponse> {
         const updateRequest = this.validationService.validate(ProductImageValidation.UPDATE, request);
 
         const existingImage = await this.prismaService.productImage.findFirst({
@@ -196,7 +200,7 @@ export class ProductService {
         }
 
         const updated = await this.prismaService.productImage.update({
-            where: { id: updateRequest.id },
+            where: { id: id },
             data: {
                 ...updateRequest,
                 updatedBy: user.name,
@@ -210,6 +214,87 @@ export class ProductService {
             iStatus: updated.iStatus,
         };
     }
+
+    async delete(user: User, id: number): Promise<void> {
+        const existing = await this.prismaService.productImage.findUnique({
+            where: { id }
+        });
+
+        if (!existing) {
+            throw new HttpException('product image not found', 404);
+        }
+        // // Cek apakah masih ada produk yang pakai kategori ini
+        // const productCount = await this.prismaService.product.count({
+        //     where: { category_id: id },
+        // });
+
+        // if (productCount > 0) {
+        //     throw new HttpException('Category masih digunakan oleh produk', HttpStatus.BAD_REQUEST);
+        // }
+        // Jika aman, hapus kategori
+        await this.prismaService.productImage.delete({
+            where: { id }
+        });
+
+        this.logger.info(`produt image with id ${id} deleted by ${user.name}`);
+    }
+
+
+    // async updateImage(
+    //     user: User,
+    //     request: ProductImageRequest,
+    //     newImageURL: string | null,
+    //     hasNewFile: boolean
+    // ): Promise<ProductImageResponse> {
+    //     const updateRequest = this.validationService.validate(ProductImageValidation.UPDATE, request);
+
+    //     const imageId = Number(updateRequest.id);
+    //     if (isNaN(imageId)) {
+    //         throw new HttpException("ID tidak valid", 400);
+    //     }
+
+    //     const existingImage = await this.prismaService.productImage.findUnique({
+    //         where: { id: imageId },
+    //     });
+
+    //     if (!existingImage) {
+    //         throw new HttpException('Image not found', 404);
+    //     }
+
+    //     let imageURL = existingImage.imageURL;
+
+    //     // Jika ada file baru, ganti imageURL dan hapus file lama
+    //     if (hasNewFile && newImageURL) {
+    //         if (existingImage.imageURL) {
+    //             const oldPath = join('.', existingImage.imageURL);
+    //             try {
+    //                 unlinkSync(oldPath);
+    //             } catch (err) {
+    //                 console.error('Gagal menghapus gambar lama:', err);
+    //             }
+    //         }
+    //         imageURL = newImageURL;
+    //     }
+
+    //     const updated = await this.prismaService.productImage.update({
+    //         where: { id: imageId },
+    //         data: {
+    //             product_id: updateRequest.product_id,
+    //             isPrimary: updateRequest.isPrimary,
+    //             iStatus: updateRequest.iStatus,
+    //             imageURL,
+    //             updatedBy: user.name,
+    //             updatedAt: new Date(),
+    //         },
+    //     });
+
+    //     return {
+    //         imageURL: updated.imageURL,
+    //         product_id: updated.product_id,
+    //         isPrimary: updated.isPrimary,
+    //         iStatus: updated.iStatus,
+    //     };
+    // }
 
     async findAllAdmin(page: number = 1, limit: number = 20): Promise<{ data: ProductResponse[], total: number }> {
         const skip = (page - 1) * limit;
@@ -274,7 +359,7 @@ export class ProductService {
             }
         });
 
-        console.log(products);
+        // console.log(products);
 
         const product = products.map((product) => {
 

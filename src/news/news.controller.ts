@@ -1,26 +1,69 @@
 // src/module/news/news.controller.ts
 
-import { Body, Controller, Get, Post, Patch, Delete, Param, HttpCode, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Patch, Delete, Param, HttpCode, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { Auth } from 'src/common/auth.decorator';
 import { User } from '@prisma/client';
 import { CreateNewsRequest, UpdateNewsRequest, NewsResponse } from 'src/model/news.model';
 import { webResponse, webResponseWithTotal } from 'src/model/web.model';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import { extname } from 'path';
 
 @Controller('/api/news')
 export class NewsController {
     constructor(private readonly newsService: NewsService) { }
 
+    // @Post('/admin/create')
+    // @HttpCode(200)
+    // async create(@Auth() user: User, @Body() body: CreateNewsRequest): Promise<webResponse<NewsResponse>> {
+    //     const data = await this.newsService.create(user, body);
+    //     return { data };
+    // }
     @Post('/admin/create')
     @HttpCode(200)
-    async create(@Auth() user: User, @Body() body: CreateNewsRequest): Promise<webResponse<NewsResponse>> {
-        const data = await this.newsService.create(user, body);
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: './uploads/news', // atau path lain sesuai kebutuhanmu
+            filename: (req, file, cb) => {
+                const uniqueSuffix = uuidv4() + extname(file.originalname);
+                cb(null, uniqueSuffix);
+            },
+        }),
+    }))
+    async create(
+        @Auth() user: User,
+        @UploadedFile() file: Express.Multer.File,
+        @Body() body: any,
+    ): Promise<webResponse<NewsResponse>> {
+        const imageURL = file ? `/uploads/news/${file.filename}` : null;
+
+        const data = await this.newsService.create(user, { ...body, imageURL });
+
         return { data };
     }
 
     @Patch('/admin/update')
-    async update(@Auth() user: User, @Body() body: UpdateNewsRequest): Promise<webResponse<NewsResponse>> {
-        const data = await this.newsService.update(user, body);
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: './uploads/news',
+            filename: (req, file, cb) => {
+                const uniqueSuffix = uuidv4() + extname(file.originalname);
+                cb(null, uniqueSuffix);
+            },
+        }),
+    }))
+    async update(
+        @Auth() user: User,
+        @UploadedFile() file: Express.Multer.File,
+        @Body() body: any
+    ): Promise<webResponse<NewsResponse>> {
+
+        // Ambil URL baru jika ada file
+        const imageURL = file ? `/uploads/news/${file.filename}` : body.imageURL || null;
+
+        const data = await this.newsService.update(user, body, imageURL, !!file);
         return { data };
     }
 
@@ -65,9 +108,9 @@ export class NewsController {
         };
     }
 
-    @Get('/findbyid/:id')
-    async findById(@Param('id') id: string): Promise<webResponse<NewsResponse>> {
-        const data = await this.newsService.findById(parseInt(id));
+    @Get('/findbyslug/:slug')
+    async findById(@Param('slug') slug: string): Promise<webResponse<NewsResponse>> {
+        const data = await this.newsService.findBySlug(slug);
         return { data };
     }
 }

@@ -7,7 +7,7 @@ import { ValidationService } from 'src/common/validation.service';
 import { User } from '@prisma/client';
 import { NewsValidation } from './news.validation';
 import { Logger } from 'winston';
-
+import { unlinkSync } from 'fs';
 
 @Injectable()
 export class NewsService {
@@ -30,66 +30,100 @@ export class NewsService {
 
     //     return result;
     // }
-    async create(user: User, request: CreateNewsRequest): Promise<NewsResponse> {
 
+    async create(user: User, request: CreateNewsRequest): Promise<NewsResponse> {
         const createRequest: CreateNewsRequest = this.validationService.validate(NewsValidation.CREATE, request);
 
-        const totalNewswithSameName = await this.prismaService.news.count({
+        const totalNewsWithSameSlug = await this.prismaService.news.count({
             where: {
                 slug: createRequest.slug,
-            }
+            },
         });
 
-        if (totalNewswithSameName != 0) {
-            throw new HttpException('news already exits', 404);
+        if (totalNewsWithSameSlug !== 0) {
+            throw new HttpException('news already exists', 404);
         }
-
 
         const news = await this.prismaService.news.create({
             data: {
                 ...createRequest,
-                ...{ createdBy: user.name }
-            }
+                createdBy: user.name,
+            },
+        });
 
-        })
-
-        // return {
-        //     id: news.id,
-        //     title: news.title,
-        //     article: news.article ?? '',
-        //     slug: news.slug ?? '',
-        //     iShowedStatus: news.iShowedStatus,
-        //     imageURL: news.imageURL ?? '',
-
-        // }
         return news;
     }
 
-    async update(user: User, request: UpdateNewsRequest): Promise<NewsResponse> {
-        const updateRequest: UpdateNewsRequest = this.validationService.validate(NewsValidation.UPDATE, request);
+    // async update(user: User, request: UpdateNewsRequest): Promise<NewsResponse> {
+    //     const updateRequest: UpdateNewsRequest = this.validationService.validate(NewsValidation.UPDATE, request);
 
-        const existing = await this.prismaService.news.findUnique({ where: { id: updateRequest.id } });
+    //     const existing = await this.prismaService.news.findUnique({ where: { id: updateRequest.id } });
+    //     if (!existing) throw new HttpException('News not found', 404);
+    //     // const checkslug = await this.prismaService.news.findUnique({ where: { slug: updateRequest.slug } });
+    //     // if (checkslug) throw new HttpException('slug already exist', 404)
+
+    //     const result = await this.prismaService.news.update({
+    //         where: { id: updateRequest.id },
+    //         data: {
+    //             // ...request,
+    //             title: updateRequest.title,
+    //             slug: updateRequest.slug,
+    //             article: updateRequest.article,
+    //             imageURL: updateRequest.imageURL,
+    //             iShowedStatus: updateRequest.iShowedStatus,
+    //             newsDate: updateRequest.newsDate,
+    //             contentURL: updateRequest.contentURL,
+    //             updatedBy: user.name,
+    //             updatedAt: new Date(),
+    //         }
+    //     });
+
+    //     return result;
+    // }
+    async update(
+        user: User,
+        request: UpdateNewsRequest,
+        newImageURL: string | null,
+        hasNewFile: boolean
+    ): Promise<NewsResponse> {
+        const newsId = Number(request.id);
+        if (isNaN(newsId)) {
+            throw new HttpException("ID tidak valid", 400);
+        }
+        const existing = await this.prismaService.news.findUnique({ where: { id: Number(request.id) } });
         if (!existing) throw new HttpException('News not found', 404);
-        // const checkslug = await this.prismaService.news.findUnique({ where: { slug: updateRequest.slug } });
-        // if (checkslug) throw new HttpException('slug already exist', 404)
 
-        const result = await this.prismaService.news.update({
-            where: { id: updateRequest.id },
+        let imageURL = existing.imageURL;
+
+        if (hasNewFile && newImageURL) {
+            // Hapus gambar lama
+            if (existing.imageURL) {
+                const oldPath = `.${existing.imageURL}`;
+                try {
+                    unlinkSync(oldPath);
+                } catch (err) {
+                    console.error('Gagal menghapus gambar lama:', err);
+                }
+            }
+            imageURL = newImageURL;
+        }
+
+        const updated = await this.prismaService.news.update({
+            where: { id: Number(request.id) },
             data: {
-                // ...request,
-                title: updateRequest.title,
-                slug: updateRequest.slug,
-                article: updateRequest.slug,
-                imageURL: updateRequest.imageURL,
-                iShowedStatus: updateRequest.iShowedStatus,
-                newsDate: updateRequest.newsDate,
-                contentURL: updateRequest.contentURL,
+                title: request.title,
+                slug: request.slug,
+                article: request.article,
+                imageURL,
+                iShowedStatus: request.iShowedStatus,
+                newsDate: new Date(request.newsDate),
+                contentURL: request.contentURL,
                 updatedBy: user.name,
                 updatedAt: new Date(),
-            }
+            },
         });
 
-        return result;
+        return updated;
     }
 
     async delete(id: number): Promise<{ message: string }> {
@@ -151,9 +185,10 @@ export class NewsService {
         return { data: result as NewsResponse[], total };
     }
 
-    async findById(id: number): Promise<NewsResponse> {
-        const result = await this.prismaService.news.findUnique({ where: { id } });
+    async findBySlug(slug: string): Promise<NewsResponse> {
+        const result = await this.prismaService.news.findUnique({ where: { slug } });
         if (!result) throw new HttpException('News not found', 404);
+        const { title, slug: resultSlug, article, imageURL, iShowedStatus, newsDate, contentURL } = result;
         return result;
     }
 }

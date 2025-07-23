@@ -16,11 +16,16 @@ export class NewsValidation {
         // id: z.number(),
         title: z.string().min(1).max(255),
         slug: z.string().min(1).max(255),
-        article: z.string().optional(),
+        article: z.string(),
         imageURL: z.string().max(250).optional(),
         iShowedStatus: z.nativeEnum(WebsiteDisplayStatus),
         // remarks: z.string().max(250).optional(),
-        newsDate: z.coerce.date().optional(), // untuk DateTime input sebagai string
+        newsDate: z.preprocess((val) => {
+            if (typeof val === "string" || val instanceof Date) {
+                return new Date(val);
+            }
+            return val;
+        }, z.date()),
         contentURL: z.string().max(250).optional(),
     });
 

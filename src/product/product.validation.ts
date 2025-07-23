@@ -9,7 +9,7 @@ export class ProductValidation {
         category_id: z.number(),
         eCatalogURL: z.string().min(1).max(250),
         // remarks: z.string().min(1).max(250),
-        iStatus: z.nativeEnum(MasterRecordStatusEnum),
+        // iStatus: z.nativeEnum(MasterRecordStatusEnum),
         iShowedStatus: z.nativeEnum(WebsiteDisplayStatus),
     });
 
@@ -21,7 +21,7 @@ export class ProductValidation {
         category_id: z.number(),
         eCatalogURL: z.string().min(1).max(250),
         // remarks: z.string().min(1).max(250),
-        iStatus: z.nativeEnum(MasterRecordStatusEnum),
+        // iStatus: z.nativeEnum(MasterRecordStatusEnum),
         iShowedStatus: z.nativeEnum(WebsiteDisplayStatus),
     });
 
@@ -52,8 +52,8 @@ export class ProductImageValidation {
         iStatus: z.nativeEnum(MasterRecordStatusEnum),
     })
     static readonly UPDATE: ZodType = z.object({
-        id: z.number(),
-        imageURL: z.string(),
+        // id: z.number(),
+        // imageURL: z.string(),
         product_id: z.number(),
         isPrimary: z.boolean(),
         iStatus: z.nativeEnum(MasterRecordStatusEnum),

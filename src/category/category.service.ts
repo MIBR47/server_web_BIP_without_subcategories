@@ -10,6 +10,7 @@ import { Logger } from 'winston';
 import { CategoryValidation } from './category.validation';
 import { CategoryResponse, CreateCategoryRequest, UpdateCategoryRequest } from 'src/model/category.model';
 import { User } from '@prisma/client';
+import { unlinkSync } from 'fs';
 
 
 @Injectable()
@@ -155,6 +156,7 @@ export class CategoryService {
 
         return Categories as CategoryResponse;
     }
+
     async delete(user: User, id: number): Promise<void> {
         const existing = await this.prismaService.category.findUnique({
             where: { id }
@@ -207,39 +209,97 @@ export class CategoryService {
     //         imageURL: updated.imageURL ?? ''
     //     };
     // }
-    async update(user: User, request: UpdateCategoryRequest): Promise<CategoryResponse> {
+    // async   update(user: User, request: UpdateCategoryRequest): Promise<CategoryResponse> {
+    //     const existing = await this.prismaService.category.findUnique({
+    //         where: { id: request.id },
+    //     });
+
+    //     if (!existing) {
+    //         throw new HttpException('Category not found', 404);
+    //     }
+
+    //     const updated = await this.prismaService.category.update({
+    //         where: { id: request.id },
+    //         data: {
+    //             name: request.name,
+    //             slug: request.slug,
+    //             remarks: request.remarks,
+    //             // iStatus: request.iStatus,
+    //             iShowedStatus: request.iShowedStatus,
+    //             imageURL: request.imageURL,
+    //             updatedBy: user.name,
+    //             updatedAt: new Date(),
+    //         },
+    //     });
+
+    //     return {
+    //         // id: updated.id,
+    //         name: updated.name,
+    //         slug: updated.slug ?? '',
+    //         remarks: updated.remarks ?? '',
+    //         // iStatus: updated.iStatus,
+    //         iShowedStatus: updated.iShowedStatus,
+    //         imageURL: updated.imageURL ?? '',
+    //     };
+    // }
+
+    async update(
+        user: User,
+        request: UpdateCategoryRequest,
+        newImageURL: string | null,
+        hasNewFile: boolean
+    ): Promise<CategoryResponse> {
+        const categoryId = Number(request.id);
+        if (isNaN(categoryId)) {
+            throw new HttpException('ID tidak valid', 400);
+        }
+
         const existing = await this.prismaService.category.findUnique({
-            where: { id: request.id },
+            where: { id: categoryId },
         });
 
         if (!existing) {
             throw new HttpException('Category not found', 404);
         }
 
+        let imageURL = existing.imageURL;
+
+        if (hasNewFile && newImageURL) {
+            // Hapus gambar lama jika ada
+            if (existing.imageURL) {
+                const oldPath = `.${existing.imageURL}`;
+                try {
+                    unlinkSync(oldPath);
+                } catch (err) {
+                    console.error('Gagal menghapus gambar lama:', err);
+                }
+            }
+
+            imageURL = newImageURL;
+        }
+
         const updated = await this.prismaService.category.update({
-            where: { id: request.id },
+            where: { id: categoryId },
             data: {
                 name: request.name,
                 slug: request.slug,
                 remarks: request.remarks,
-                // iStatus: request.iStatus,
                 iShowedStatus: request.iShowedStatus,
-                imageURL: request.imageURL,
+                imageURL,
                 updatedBy: user.name,
                 updatedAt: new Date(),
             },
         });
 
         return {
-            // id: updated.id,
             name: updated.name,
             slug: updated.slug ?? '',
             remarks: updated.remarks ?? '',
-            // iStatus: updated.iStatus,
             iShowedStatus: updated.iShowedStatus,
             imageURL: updated.imageURL ?? '',
         };
     }
+
 
 
 }
