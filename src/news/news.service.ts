@@ -168,12 +168,12 @@ export class NewsService {
 
         const [news, total] = await this.prismaService.$transaction([
             this.prismaService.news.findMany({
-                where: { iShowedStatus: 'Show' },
+                // where: { iShowedStatus: 'Show' },
                 skip,
                 take: limit,
             }),
             this.prismaService.news.count({
-                where: { iShowedStatus: 'Show' },
+                // where: { iShowedStatus: 'Show' },
             }),
         ]);
 
