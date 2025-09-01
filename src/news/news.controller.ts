@@ -37,7 +37,7 @@ export class NewsController {
         @UploadedFile() file: Express.Multer.File,
         @Body() body: any,
     ): Promise<webResponse<NewsResponse>> {
-        const imageURL = file ? `/uploads/news/${file.filename}` : null;
+        const imageURL = file ? `/uploads/news/${file.filename}` : undefined;
 
         const data = await this.newsService.create(user, { ...body, imageURL });
 
