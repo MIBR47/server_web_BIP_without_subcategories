@@ -215,6 +215,55 @@ export class ProductService {
         };
     }
 
+    async deleteProductAndRelations(user: User, productId: number): Promise<void> {
+        // Cek apakah produk ada
+        const existingProduct = await this.prismaService.product.findUnique({
+            where: { id: productId },
+        });
+
+        if (!existingProduct) {
+            throw new HttpException('product not found', 404);
+        }
+
+        // Jalankan transaction untuk hapus data terkait
+        await this.prismaService.$transaction(async (tx) => {
+            // Hapus productDesc terkait
+            await tx.productDesc.deleteMany({
+                where: { product_id: productId },
+            });
+
+            // Cari product images terkait untuk hapus file di storage juga
+            const productImages = await tx.productImage.findMany({
+                where: { product_id: productId },
+            });
+
+            // Hapus file gambar fisik (jika perlu)
+            productImages.forEach(image => {
+                if (image.imageURL) {
+                    try {
+                        const filePath = join('.', image.imageURL);
+                        unlinkSync(filePath);
+                    } catch (err) {
+                        this.logger.warn(`Failed to delete image file ${image.imageURL}: ${err.message}`);
+                    }
+                }
+            });
+
+            // Hapus productImage terkait
+            await tx.productImage.deleteMany({
+                where: { product_id: productId },
+            });
+
+            // Hapus product utama
+            await tx.product.delete({
+                where: { id: productId },
+            });
+        });
+
+        this.logger.info(`Product ${productId} and related descriptions and images deleted by ${user.name}`);
+    }
+
+
     async delete(user: User, id: number): Promise<void> {
         const existing = await this.prismaService.productImage.findUnique({
             where: { id }

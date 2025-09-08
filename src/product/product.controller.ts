@@ -117,6 +117,18 @@ export class ProductController {
         return { data: result };
     }
 
+    @Delete('/admin/delete/:id')
+    @HttpCode(200)
+    async deleteProduct(
+        @Auth() user: User,
+        @Param('id') id: string
+    ): Promise<webResponse<string>> {
+        const productId = parseInt(id);
+        await this.productService.deleteProductAndRelations(user, productId);
+        return { data: 'Product and related data deleted successfully' };
+    }
+
+
     @Delete('/admin/deleteImageProduct/:id')
     @HttpCode(200)
     async delete(
