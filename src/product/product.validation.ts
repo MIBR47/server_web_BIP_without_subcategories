@@ -29,20 +29,28 @@ export class ProductValidation {
 
 export class ProductDescValidation {
     static readonly CREATE: ZodType = z.object({
-        other_info: z.string(),
-        productSpec: z.string(),
-        // benefits: z.string(),
+        other_info: z.string().optional(),
+        productSpec: z.array(
+            z.object({
+                label: z.string().min(1),
+                value: z.string().min(1),
+            })
+        ).optional(), // kalau tidak wajib, bisa .optional()
         product_id: z.number(),
-    })
+    });
 
     static readonly UPDATE: ZodType = z.object({
         id: z.number(),
-        other_info: z.string(),
-        productSpec: z.string(),
-        // benefits: z.string(),
-        // product_id: z.number(),
-    })
+        other_info: z.string().optional(),
+        productSpec: z.array(
+            z.object({
+                label: z.string().min(1),
+                value: z.string().min(1),
+            })
+        ).optional(),
+    });
 }
+
 
 export class ProductImageValidation {
     static readonly CREATE: ZodType = z.object({

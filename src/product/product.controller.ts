@@ -14,7 +14,7 @@ import {
 import { ProductService } from './product.service';
 import { Auth } from 'src/common/auth.decorator';
 import { User } from '@prisma/client';
-import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse, UpdateProductImageRequest } from 'src/model/product.model';
+import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse, UpdateProductImageRequest, UpdateProductRequest } from 'src/model/product.model';
 import { webResponse, webResponseWithTotal } from 'src/model/web.model';
 import * as request from 'supertest';
 import { UpdateCategoryRequest } from 'src/model/category.model';
@@ -94,7 +94,7 @@ export class ProductController {
 
     @Patch('/admin/update')
     @HttpCode(200)
-    async updateProduct(@Auth() user: User, @Body() request: UpdateCategoryRequest): Promise<webResponse<ProductResponse>> {
+    async updateProduct(@Auth() user: User, @Body() request: UpdateProductRequest): Promise<webResponse<ProductResponse>> {
         const result = await this.productService.update(user, request);
         return { data: result };
     }

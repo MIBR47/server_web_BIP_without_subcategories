@@ -90,20 +90,29 @@ model SubCategory {
 
 model Product {
   id            Int                  @id(map: "pk_Product") @default(autoincrement()) @db.Integer
+  // register_id   String?                @db.Char(20)
   catalog_id    String?              @db.VarChar(40)
   name          String               @db.VarChar(250)
   slug          String?              @unique @db.VarChar(250)
   category_id   Int                  @db.Integer
   eCatalogURL   String?              @db.VarChar(250)
+  // remarks       String?                @db.VarChar(250)
+  // iStatus       MasterRecordStatusEnum @default(Active)
   iShowedStatus WebsiteDisplayStatus @default(Show)
+  // isMaterial    Boolean                @default(false)
+  // isService     Boolean                @default(false)
+  // isFinishing   Boolean                @default(false)
+  // isAccessories Boolean                @default(false)
   createdBy     String               @db.VarChar(50)
   createdAt     DateTime             @default(now()) @db.Timestamptz(0)
   updatedBy     String?              @db.VarChar(50)
   updatedAt     DateTime?            @updatedAt @db.Timestamptz(0)
-
-  Category     Category       @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Product_id_Category_fkey")
-  ProductDesc  ProductDesc?
-  ProductImage ProductImage[]
+  Category      Category             @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Product_id_Category_fkey")
+  ProductDesc   ProductDesc?
+  ProductImage  ProductImage[]
+  // ProductSpec    ProductSpec[]
+  // productDescId Int                    @db.Integer
+  // productDescId Int                    @unique @db.Integer
 
   @@index([category_id], map: "fki_Product_id_Category_fkey")
   @@map("Products")
@@ -112,15 +121,20 @@ model Product {
 model ProductDesc {
   id          Int       @id(map: "pk_ProductDesc") @default(autoincrement()) @db.Integer
   other_info  String?
-  productSpec Json? // ubah dari String? jadi Json?
+  productSpec String?
+  // benefits     String?
   createdBy   String    @db.VarChar(50)
   createdAt   DateTime  @default(now()) @db.Timestamptz(0)
   updatedBy   String?   @db.VarChar(50)
   updatedAt   DateTime? @updatedAt @db.Timestamptz(0)
   product_id  Int       @unique @db.Integer
   Product     Product   @relation(fields: [product_id], references: [id])
+  // @relation(fields: [product_id], references: [id], map: "ProductDesc_id_product_fkey")
+
+  // @@index([product_id], map: "fki_ProductDesc_id_product_fkey")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model ProductImage {
   id         Int                    @id(map: "pk_ProductImage") @default(autoincrement()) @db.Integer
   product_id Int                    @db.Integer
@@ -131,8 +145,7 @@ model ProductImage {
   createdAt  DateTime               @default(now()) @db.Timestamptz(0)
   updatedBy  String?                @db.VarChar(50)
   updatedAt  DateTime?              @updatedAt @db.Timestamptz(0)
-
-  Product Product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ProductImage_id_Product_fkey")
+  Product    Product                @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ProductImage_id_Product_fkey")
 
   @@index([product_id], map: "fki_ProductImage_id_Product_fkey")
 }

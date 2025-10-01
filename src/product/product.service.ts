@@ -3,7 +3,7 @@ import { User, ProductImage } from '@prisma/client';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validation.service';
-import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse, UpdateProductImageRequest } from 'src/model/product.model';
+import { CreateProductRequest, ProductDescRequest, ProductDescResponse, ProductImageRequest, ProductImageResponse, ProductResponse, UpdateProductImageRequest, UpdateProductRequest } from 'src/model/product.model';
 import { Logger } from 'winston';
 import { ProductDescValidation, ProductImageValidation, ProductValidation } from './product.validation';
 import * as request from 'supertest';
@@ -96,7 +96,7 @@ export class ProductService {
 
         return {
             other_info: productDesc.other_info ?? "",
-            productSpec: productDesc.productSpec ?? "",
+            productSpec: (productDesc.productSpec as any) ?? [],
             // benefits: productDesc.benefits ?? "",
             product_id: productDesc.product_id
         }
@@ -135,8 +135,8 @@ export class ProductService {
 
     }
 
-    async update(user: User, request: UpdateCategoryRequest): Promise<ProductResponse> {
-        const updateRequest: UpdateCategoryRequest = this.validationService.validate(ProductValidation.UPDATE, request);
+    async update(user: User, request: UpdateProductRequest): Promise<ProductResponse> {
+        const updateRequest: UpdateProductRequest = this.validationService.validate(ProductValidation.UPDATE, request);
 
         const existingProduct = await this.prismaService.product.findFirst({
             where: { id: updateRequest.id },
@@ -183,7 +183,7 @@ export class ProductService {
 
         return {
             other_info: updated.other_info ?? "",
-            productSpec: updated.productSpec ?? "",
+            productSpec: (updated.productSpec as any) ?? [],
             product_id: updated.product_id,
         };
     }

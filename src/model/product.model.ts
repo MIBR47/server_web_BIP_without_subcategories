@@ -19,7 +19,7 @@ export class ProductResponse {
 
 export class ProductDescResponse {
     other_info: string;
-    productSpec: string;
+    productSpec: { label: string; value: string }[];
     // benefits: string;
     product_id: number;
     // createdBy: string;
@@ -28,7 +28,7 @@ export class ProductDescResponse {
 
 export class ProductDescRequest {
     other_info: string;
-    productSpec: string;
+    productSpec: { label: string; value: string }[];
     // benefits: string;
     product_id: number;
     createdBy: string;
